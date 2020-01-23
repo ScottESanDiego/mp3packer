@@ -5,7 +5,7 @@ EAPI=6
 
 inherit toolchain-funcs
 MY_PV="26cef03"
-EGIT_REPO_URI="git@github.com:ScottESanDiego/mp3packer.git"
+EGIT_REPO_URI="https://github.com/ScottESanDiego/mp3packer"
 EGIT_BRANCH="master"
 inherit git-r3
 
