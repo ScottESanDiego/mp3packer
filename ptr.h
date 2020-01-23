@@ -39,6 +39,10 @@ typedef unsigned __int16 uint16_t;
 
 #ifdef __linux__
 #include <byteswap.h>
+#define uint32 uint32_t
+#define uint64 uint64_t
+#define int32 int32_t
+#define int64 int64_t
 #endif
 
 #if defined(__APPLE__)
