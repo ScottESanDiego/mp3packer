@@ -37,6 +37,14 @@ typedef unsigned __int16 uint16_t;
 #define TRUE 1
 #endif
 
+#ifdef __linux__
+#include <byteswap.h>
+#endif
+
+#if defined(__APPLE__)
+#include <libkern/OSByteOrder.h>
+#endif
+
 enum ptr_type {
 	PTR_MALLOC,
 	PTR_MMAP,
@@ -107,5 +115,46 @@ static struct custom_operations generic_ptr_opts = {
 	custom_serialize_default,
 	custom_deserialize_default
 };
+
+static inline uint32_t byteswap32(uint32_t n)
+{
+#if defined(__builtin_bswap32)
+     return __builtin_bswap32(n);
+#elif defined(OSSwapInt32)
+     return OSSwapInt32(n);
+#elif defined(bswap32)
+     return bswap32(n);
+#elif defined(__swap32)
+     return __swap32(n);
+#elif defined(bswap_32)
+     return bswap_32(n);
+#elif defined(_byteswap_ulong)
+     return _byteswap_ulong(n);
+#else 
+     return	(((n << 24) & 0xff000000 ) |
+             ((n <<  8) & 0x00ff0000 ) |
+             ((n >>  8) & 0x0000ff00 ) |
+     		 ((n >> 24) & 0x000000ff ));
+#endif
+}
+
+static inline uint16_t byteswap16(uint16_t n)
+{
+#if defined(__builtin_bswap16)
+     return __builtin_bswap16(n);
+#elif defined(OSSwapInt16)
+     return OSSwapInt16(n);
+#elif defined(bswap16)
+     return bswap16(n);
+#elif defined(__swap16)
+     return __swap16(n);
+#elif defined(bswap_16)
+     return bswap_16(n);
+#elif defined(_byteswap_ushort)
+     return _byteswap_ushort(n);
+#else
+     return (((n & 0x00FF) << 8) | ((n & 0xFF00) >> 8));
+#endif
+}
 
 #endif /* PTR_H */

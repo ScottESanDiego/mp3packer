@@ -18,11 +18,6 @@
 //#define enter_blocking_section()
 //#define leave_blocking_section()
 
-#ifdef _WIN32
-#define HAS_BYTESWAP 1
-#endif
-
-
 /*
  * This is a new style for ptrs: the custom ptr points to a ptr_struct struct
  */
@@ -318,23 +313,12 @@ CAMLprim value ptr_get_float_of_64(value ptr_val, value offset_val) {
 // Apparently CAMLparamX is only needed if a heap allocation takes place before a heap access
 CAMLprim void ptr_put_16_of_int_bswap(value ptr_val, value offset_val, value put_val) {
 	uint16_t *loc = (uint16_t *)(Begin_val(ptr_val) + Long_val(offset_val));
-	uint16_t put = Int_val(put_val);
-	// It looks like _byteswap_ushort just maps to a 16-bit rotate, so use a more portable version
-	// It should map the exact same way
-	put = (((put & 0x00FF) << 8) | ((put & 0xFF00) >> 8));
-	*loc = put;
+	*loc = byteswap16(Int_val(put_val));
 }
 
 CAMLprim void ptr_put_32_of_int_bswap(value ptr_val, value offset_val, value put_val) {
 	uint32 *loc = (uint32 *)(Begin_val(ptr_val) + Long_val(offset_val));
-	uint32 put = Int_val(put_val);
-#if HAS_BYTESWAP
-	put = _byteswap_ulong(put);
-#else
-	put = (((put & 0x0000FFFF) << 16) | ((put & 0xFFFF0000) >> 16));
-	put = (((put & 0x00FF00FF) <<  8) | ((put & 0xFF00FF00) >>  8));
-#endif
-	*loc = put;
+	*loc = byteswap32(Int_val(put_val));
 }
 
 // bswap only works on ints, so we have to go double -> float -> int
@@ -342,25 +326,12 @@ CAMLprim void ptr_put_32_of_float_bswap(value ptr_val, value offset_val, value p
 	uint32 *loc = (uint32 *)(Begin_val(ptr_val) + Long_val(offset_val));
 	float put_float = Double_val(put_val);
 	uint32 put = *((uint32 *)(&put_float));
-#if HAS_BYTESWAP
-	put = _byteswap_ulong(put);
-#else
-	put = (((put & 0x0000FFFF) << 16) | ((put & 0xFFFF0000) >> 16));
-	put = (((put & 0x00FF00FF) <<  8) | ((put & 0xFF00FF00) >>  8));
-#endif
-	*loc = put;
+	*loc = byteswap32(put);
 }
 
 CAMLprim value ptr_get_int_of_32u_bswap(value ptr_val, value offset_val) {
 	uint32 *loc = (uint32 *)(Begin_val(ptr_val) + Long_val(offset_val));
-	uint32 got = loc[0];
-#if HAS_BYTESWAP
-	got = _byteswap_ulong(got);
-#else
-// GCC has __builtin_bswap32, but the assembly doesn't look too much better
-	got = (((got & 0x0000FFFF) << 16) | ((got & 0xFFFF0000) >> 16));
-	got = (((got & 0x00FF00FF) <<  8) | ((got & 0xFF00FF00) >>  8));
-#endif
+	uint32 got = byteswap32(loc[0]);
 	return(Val_int(got));
 }
 

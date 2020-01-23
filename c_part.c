@@ -16,6 +16,11 @@
 #if defined(WIN32)
 #include <windows.h>
 #else
+#if defined(__CYGWIN__)
+#include <intrin.h>
+#endif
+#include <pthread.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #endif
@@ -131,11 +136,11 @@ CAMLprim value caml_nice(value val_niceness)
 
 CAMLprim value get_capabilities() {
 	CAMLparam0();
-	int info[4];
-	int max_eax;
 	CAMLlocal1(out_val);
 	out_val = caml_alloc_tuple(5);
-#if defined(WIN32)
+#if defined(WIN32) || defined (__CYGWIN__)
+	int info[4];
+	int max_eax;
 	__cpuid(info, 0);
 	max_eax = info[0];
 	if(max_eax >= 1) {
@@ -185,8 +190,10 @@ CAMLprim value get_os_thread_self_id() {
 //		printf("HANDLE IS %p\n", (int)dup_handle);
 		out_val = win_alloc_handle(dup_handle);
 	}
+#elif defined(__APPLE__)
+    out_val = pthread_mach_thread_np(pthread_self());
 #else
-	out_val = Val_int(gettid());
+	out_val = Val_int(pthread_self());
 #endif
 	CAMLreturn(out_val);
 }
