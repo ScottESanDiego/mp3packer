@@ -6,6 +6,8 @@ SOURCES=ptr.ml ptr-c.c crc.ml list2.ml expandarray.ml c_part.c \
 RESULT=mp3packer
 THREADS=yes
 
+OCAMLFLAGS="-unsafe-string"
+
 SYSTEM := $(shell ocamlc -config 2>/dev/null | grep system | sed 's/system: //')
 
 ifeq ($(SYSTEM),$(filter $(SYSTEM),mingw mingw64))
